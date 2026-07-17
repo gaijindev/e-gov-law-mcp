@@ -17,14 +17,27 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 
+import os
+
 import requests
 from fastmcp import FastMCP
+
+from cache import TTLCache, ttl_cached
 
 EGOV_BASE = "https://laws.e-gov.go.jp/api/2"
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 mcp = FastMCP("e-gov-law")
+
+# Statute text and law-name resolution both change rarely; caching them turns
+# repeat find_law_article/get_law_content calls against the same law (a common
+# pattern for callers pulling several articles from one statute) into cache
+# hits after the first fetch. TTL is configurable since "how stale is
+# acceptable" is an operational choice, not a code one.
+_CACHE_TTL = float(os.environ.get("LAW_CACHE_TTL_SECONDS", 21_600))
+RESOLVE_LAW_CACHE = TTLCache(maxsize=128, ttl=_CACHE_TTL)
+LAW_XML_CACHE = TTLCache(maxsize=64, ttl=_CACHE_TTL)
 
 # Common laws mapped straight to their 法令番号 so no search is needed.
 BASIC_LAWS = {
@@ -170,6 +183,7 @@ def _law_brief(item: dict) -> dict:
     return brief
 
 
+@ttl_cached(RESOLVE_LAW_CACHE)
 def _resolve_law(law_name: str) -> tuple[str | None, str | None, str | None]:
     """Resolve a law name to (law_num, resolved_title, alias_source).
 
@@ -193,6 +207,7 @@ def _resolve_law(law_name: str) -> tuple[str | None, str | None, str | None]:
     return info.get("law_num"), rev.get("law_title"), alias_source
 
 
+@ttl_cached(LAW_XML_CACHE)
 def _fetch_law_xml(law_id_or_num: str) -> tuple[ET.Element, dict, dict]:
     """Fetch a law's standard XML and return (root, law_info, revision_info)."""
     data = _get(f"/law_data/{law_id_or_num}", law_full_text_format="xml")
@@ -427,6 +442,28 @@ def read_saved_law(filename: str, offset: int = 0, max_chars: int = 5000) -> dic
         "returned_chars": len(chunk),
         "truncated": offset + max_chars < len(text),
         "text": chunk,
+    }
+
+
+@mcp.tool
+def get_cache_stats() -> dict:
+    """Report hit/miss counts for the internal law-resolution and law-XML caches."""
+    return {
+        "resolve_law": RESOLVE_LAW_CACHE.stats(),
+        "law_xml": LAW_XML_CACHE.stats(),
+    }
+
+
+@mcp.tool
+def clear_cache() -> dict:
+    """Clear the internal law-resolution and law-XML caches.
+
+    Use after an amendment you need reflected before the TTL naturally
+    expires; normal operation never requires this.
+    """
+    return {
+        "resolve_law_entries_cleared": RESOLVE_LAW_CACHE.clear(),
+        "law_xml_entries_cleared": LAW_XML_CACHE.clear(),
     }
 
 

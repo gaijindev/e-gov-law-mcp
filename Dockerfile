@@ -5,7 +5,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt uvicorn
 
-COPY server.py serve_http.py ./
+COPY server.py serve_http.py cache.py ./
 
 ENV PORT=8000
 EXPOSE 8000
