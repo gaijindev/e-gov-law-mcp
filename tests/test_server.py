@@ -286,7 +286,12 @@ async def test_admin_tools_hidden_by_default():
         names = {t.name for t in await client.list_tools()}
     assert names == {"search_laws", "search_laws_by_keyword", "find_law_article",
                      "get_law_element", "get_law_revisions", "get_law_content",
-                     "search", "fetch"}
+                     "search", "fetch",
+                     # feature modules wired in at the bottom of server.py
+                     "get_english_law", "search_english_laws", "lookup_legal_term",
+                     "compare_law_revisions",
+                     "get_law_definitions", "get_article_references",
+                     "find_where_cited"}
 
 
 async def test_admin_tools_registered_when_enabled(monkeypatch):

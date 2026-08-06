@@ -1088,6 +1088,17 @@ if ADMIN_TOOLS:
                           "openWorldHint": False})(clear_cache)
 
 
+# Feature modules import helpers from this module, so they must be wired in
+# after everything above is defined (bottom-of-file import avoids the cycle).
+import english  # noqa: E402
+import revision_diff  # noqa: E402
+import xref  # noqa: E402
+
+english.register(mcp)
+revision_diff.register(mcp)
+xref.register(mcp)
+
+
 def main() -> None:
     """Console-script entrypoint (``e-gov-law-mcp``, see pyproject.toml)."""
     mcp.run()

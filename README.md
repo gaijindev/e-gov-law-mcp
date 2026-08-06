@@ -62,6 +62,13 @@ the desk.
 | `get_law_element` | Fetch any element of a law by its raw `elm` path — the escape hatch for 別表 (`AppdxTable[1]`), a whole 附則 block, 前文, 目次, or a specific paragraph. |
 | `get_law_revisions` | List a law's amendment history, including 未施行 (promulgated, not yet in force) amendments and their enforcement dates. |
 | `search` / `fetch` | ChatGPT Deep Research's two-tool convention — see [ChatGPT / Deep Research](#chatgpt--deep-research). |
+| `get_english_law` | Official (unofficial-reference) English translation of a law or a single article, from the Ministry of Justice's [Japanese Law Translation](https://www.japaneselawtranslation.go.jp/) — bilingual text, with an explicit staleness check against the current Japanese revision. |
+| `search_english_laws` | Search the JLT catalogue of ~1,000 translated laws by English or Japanese keyword. |
+| `lookup_legal_term` | Bilingual legal-term lookup in the official 標準対訳辞書 (5,000+ entries, with usage guidance and example sentences). |
+| `compare_law_revisions` | 新旧対照: diff two versions of a law (revision ids, dates ≥ 2017-04-01, `current`, `previous`) article-by-article, or one article in full. |
+| `get_law_definitions` | Extract 定義語 (defined terms) — dedicated 定義 articles, 各号 definitions, and inline （以下「X」という。） — with their scope and defining article. |
+| `get_article_references` | All outbound references from one article: internal (incl. resolved 前条/前項), external laws (with 法令番号), and 準用/読み替え clauses. |
+| `find_where_cited` | Reverse lookup within a law: every article that cites a given article (枝番-exact, kanji-numeral aware). |
 | `list_saved_laws`, `read_saved_law`, `get_cache_stats`, `clear_cache` | Operator tools (local file listing, cache introspection). Hidden by default; set `LAW_MCP_ADMIN_TOOLS=1` to expose them. |
 
 ## Example use cases

@@ -41,4 +41,4 @@ dev = [
 e-gov-law-mcp = "server:main"
 
 [tool.hatch.build.targets.wheel]
-include = ["server.py", "cache.py"]
+include = ["server.py", "cache.py", "english.py", "revision_diff.py", "xref.py"]
