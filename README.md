@@ -104,13 +104,27 @@ its keep where being wrong is expensive: law, medicine, finance.
 
 ## Installation
 
+The simplest way to run this server is [`uvx`](https://docs.astral.sh/uv/guides/tools/)
+— it fetches the package from PyPI and runs it in an isolated environment, no clone
+or venv needed. The PyPI distribution is named `japan-law-mcp`, not `e-gov-law-mcp`
+(the latter was blocked as confusingly similar to an existing, unrelated package):
+
+```sh
+uvx japan-law-mcp
+```
+
+That's the command you point an MCP client at (see below). Run it directly to
+confirm it starts (it waits on stdio for a client — Ctrl-C to exit).
+
 There's also a live hosted instance you can point a client at right away, no
 install: `https://e-gov-law-mcp.onrender.com/mcp` (Streamable HTTP, authless —
 see [Hosted / HTTP deployment](#hosted--http-deployment)). It's a free-tier
 deployment, so it sleeps after ~15 minutes idle and takes a few seconds to wake up
 on the next request.
 
-To run it yourself, clone and use a venv:
+### From source
+
+For local development, or to run a specific commit:
 
 ```sh
 git clone https://github.com/gaijindev/e-gov-law-mcp.git
@@ -119,17 +133,11 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-Run it directly to check it starts (it waits on stdio for a client — Ctrl-C to exit):
+Run it directly to check it starts:
 
 ```sh
 .venv/bin/python server.py
 ```
-
-Once this package is published to PyPI, `uvx japan-law-mcp` will be the simplest
-way to run it with no clone or venv — the console script and packaging are already
-set up for that ([`pyproject.toml`](pyproject.toml)); it isn't published yet. (The
-PyPI distribution is named `japan-law-mcp`, not `e-gov-law-mcp` — the latter was
-blocked as confusingly similar to an existing, unrelated package.)
 
 ## Use it with Claude or OpenAI
 
@@ -139,15 +147,34 @@ tools to fetch the real law.
 
 ### Claude (no coding)
 
-**Fastest option — point at the hosted instance**, no install: in Claude Desktop or
-Claude Code, add a remote MCP server at
-`https://e-gov-law-mcp.onrender.com/mcp` (see [Installation](#installation) for the
-free-tier cold-start caveat).
+**No install** — point at the hosted instance: in Claude Desktop or Claude Code,
+add a remote MCP server at `https://e-gov-law-mcp.onrender.com/mcp` (see
+[Installation](#installation) for the free-tier cold-start caveat).
 
-**Or run it locally.** After [installing from source](#installation), add it to the
-config file, then restart Claude:
+**Claude Desktop** — add the server to the config file, then restart Claude:
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "e-gov-law": {
+      "command": "uvx",
+      "args": ["japan-law-mcp"]
+    }
+  }
+}
+```
+
+**Claude Code (CLI)** — one command:
+
+```sh
+claude mcp add e-gov-law -- uvx japan-law-mcp
+claude mcp list   # confirm it shows ✓ Connected
+```
+
+Running [from source](#from-source) instead? Swap the command/args for the
+venv interpreter and `server.py`'s absolute path:
 
 ```json
 {
@@ -158,13 +185,6 @@ config file, then restart Claude:
     }
   }
 }
-```
-
-**Claude Code (CLI)** — one command:
-
-```sh
-claude mcp add e-gov-law -- /absolute/path/to/e-gov-law-mcp/.venv/bin/python /absolute/path/to/e-gov-law-mcp/server.py
-claude mcp list   # confirm it shows ✓ Connected
 ```
 
 Then just ask, in plain English or Japanese:
@@ -188,10 +208,7 @@ from agents.mcp import MCPServerStdio
 
 async def main():
     async with MCPServerStdio(
-        params={
-            "command": "/absolute/path/to/e-gov-law-mcp/.venv/bin/python",
-            "args": ["/absolute/path/to/e-gov-law-mcp/server.py"],
-        }
+        params={"command": "uvx", "args": ["japan-law-mcp"]}
     ) as egov:
         agent = Agent(
             name="JP Law Assistant",
