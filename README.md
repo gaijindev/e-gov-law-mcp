@@ -147,8 +147,8 @@ tools to fetch the real law.
 
 ### Claude (no coding)
 
-**No install** — point at the hosted instance: in Claude Desktop or Claude Code,
-add a remote MCP server at `https://e-gov-law-mcp.onrender.com/mcp` (see
+With no install at all, add the hosted instance as a remote MCP server in Claude
+Desktop or Claude Code: `https://e-gov-law-mcp.onrender.com/mcp` (see
 [Installation](#installation) for the free-tier cold-start caveat).
 
 **Claude Desktop** — add the server to the config file, then restart Claude:
