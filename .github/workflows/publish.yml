@@ -3,7 +3,8 @@ name: Publish to PyPI
 # Trusted publishing (OIDC) — no PyPI token is stored as a GitHub secret.
 # One-time setup on PyPI's side before the first run: on
 # https://pypi.org/manage/account/publishing/, add a *pending* trusted
-# publisher for a project named "e-gov-law-mcp" with:
+# publisher for a project named "japan-law-mcp" (plain "e-gov-law-mcp" is
+# blocked as confusingly similar to an existing, unrelated PyPI package) with:
 #   Owner: gaijindev   Repository: e-gov-law-mcp
 #   Workflow name: publish.yml   Environment: pypi
 # PyPI creates the project on the first successful publish from that workflow.
@@ -18,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/e-gov-law-mcp
+      url: https://pypi.org/p/japan-law-mcp
     permissions:
       id-token: write  # required for OIDC trusted publishing
     steps:

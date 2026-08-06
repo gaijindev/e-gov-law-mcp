@@ -125,9 +125,11 @@ Run it directly to check it starts (it waits on stdio for a client — Ctrl-C to
 .venv/bin/python server.py
 ```
 
-Once this package is published to PyPI, `uvx e-gov-law-mcp` will be the simplest
+Once this package is published to PyPI, `uvx japan-law-mcp` will be the simplest
 way to run it with no clone or venv — the console script and packaging are already
-set up for that ([`pyproject.toml`](pyproject.toml)); it isn't published yet.
+set up for that ([`pyproject.toml`](pyproject.toml)); it isn't published yet. (The
+PyPI distribution is named `japan-law-mcp`, not `e-gov-law-mcp` — the latter was
+blocked as confusingly similar to an existing, unrelated package.)
 
 ## Use it with Claude or OpenAI
 

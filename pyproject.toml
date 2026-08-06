@@ -3,7 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "e-gov-law-mcp"
+# PyPI's project name (not the GitHub repo, which stays e-gov-law-mcp): plain
+# "e-gov-law-mcp" is blocked as confusingly similar to the existing, unrelated
+# "egov-law-mcp" package. "japan-law-mcp" also better matches what this server
+# does now — English translations, revision diffs, cross-references — beyond
+# just wrapping e-Gov.
+name = "japan-law-mcp"
 version = "0.2.0"
 description = "MCP server for Japan's e-Gov 法令API v2 — search, cite and quote Japanese statutes by article, including 附則/別表/号 and point-in-time (asof) lookups."
 readme = "README.md"
@@ -40,7 +45,7 @@ dev = [
 ]
 
 [project.scripts]
-e-gov-law-mcp = "server:main"
+japan-law-mcp = "server:main"
 
 [tool.hatch.build.targets.wheel]
 include = ["server.py", "cache.py", "english.py", "revision_diff.py", "xref.py"]
