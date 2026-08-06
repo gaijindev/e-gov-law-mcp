@@ -1,0 +1,17 @@
+# Render Blueprint — deploy with "New > Blueprint" in the Render dashboard,
+# pointing at this repo. Builds the existing Dockerfile as-is.
+#
+# LAW_MCP_PUBLIC=1 runs the server authless (see serve_http.py's docstring —
+# this is a legitimate choice for public, keyless statute data). To require a
+# bearer token instead, delete the LAW_MCP_PUBLIC var below and add
+# LAW_MCP_TOKEN with a long random value (Render's dashboard can generate one
+# via generateValue: true, or set it manually as a secret env var).
+services:
+  - type: web
+    name: e-gov-law-mcp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: LAW_MCP_PUBLIC
+        value: "1"

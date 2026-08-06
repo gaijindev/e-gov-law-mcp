@@ -258,6 +258,13 @@ looks like a mistake:
 `read_saved_law`, `get_cache_stats`, `clear_cache`) — leave it unset on a public
 deployment.
 
+**Deploy to Render**: this repo includes a [`render.yaml`](render.yaml) Blueprint that
+builds the existing `Dockerfile` as-is, authless by default. In the Render dashboard:
+**New → Blueprint**, point it at this repo (or your fork), and deploy — no extra
+config needed. Render's free tier spins the instance down after ~15 minutes idle and
+cold-starts on the next request; fine for testing, worth upgrading for a
+directory-listed connector you want reliably reachable.
+
 ## Bundled skill
 
 `skill/jp-foreigner-law-qa/SKILL.md` is a Claude skill that maps common immigration,
