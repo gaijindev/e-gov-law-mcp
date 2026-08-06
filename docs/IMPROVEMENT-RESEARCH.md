@@ -1,5 +1,12 @@
 # Improvement research — e-Gov Law MCP (2026-08-06)
 
+> **Historical design notes, not current documentation.** This is a point-in-time
+> engineering audit that shaped the 0.2.0 rewrite; most items it lists as gaps
+> (elm-based fetch, 附則/別表/号, asof, English translations, revision diffs,
+> cross-references) have since been implemented. For the current tool surface see
+> the top-level [README](../README.md). Kept for context on *why* the server is
+> shaped the way it is, not as a live TODO list.
+
 Deep-research synthesis from four streams: a code audit verified against the live
 e-Gov API, a full inventory of 法令API v2 capabilities we don't use, current MCP
 server best practices (spec 2025-11-25, Anthropic tool-design guidance, FastMCP 2.x),

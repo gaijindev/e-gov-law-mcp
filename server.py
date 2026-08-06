@@ -34,12 +34,34 @@ from cache import TTLCache, ttl_cached
 
 EGOV_BASE = "https://laws.e-gov.go.jp/api/2"
 USER_AGENT = "e-gov-law-mcp (+https://github.com/gaijindev/e-gov-law-mcp)"
-DATA_DIR = Path(__file__).parent / "data"
+
+
+def _default_data_dir() -> Path:
+    """Where to save law text files.
+
+    Running from a checked-out repo (dev/stdio-from-source use), a `data/`
+    folder next to server.py is the obvious, visible place. But once this is
+    pip/uvx-installed, `__file__` resolves inside site-packages — writing
+    there would silently pollute the installed package instead of the
+    user's own files. Detect that case and fall back to a per-user data
+    directory instead. `LAW_MCP_DATA_DIR` always overrides both.
+    """
+    override = os.environ.get("LAW_MCP_DATA_DIR")
+    if override:
+        return Path(override)
+    here = Path(__file__).resolve()
+    if "site-packages" in here.parts or "dist-packages" in here.parts:
+        base = os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share")
+        return Path(base) / "e-gov-law-mcp"
+    return here.parent / "data"
+
+
+DATA_DIR = _default_data_dir()
 
 # The hosted HTTP deployment runs on a read-only/ephemeral filesystem, so the
 # save-to-disk path has to degrade instead of crashing the tool.
 try:
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     DATA_WRITABLE = os.access(DATA_DIR, os.W_OK)
 except OSError:
     DATA_WRITABLE = False
@@ -144,7 +166,10 @@ def _get(path: str, **params) -> dict | None:
         except ValueError:
             pass
     if not resp.ok:
-        raise RuntimeError(f"e-Gov API error (HTTP {resp.status_code}) for {path}: {resp.text[:200]}")
+        content_type = resp.headers.get("content-type", "")
+        body = resp.text[:200] if "json" in content_type or "text" in content_type \
+            else "(non-text error body)"
+        raise RuntimeError(f"e-Gov API error (HTTP {resp.status_code}) for {path}: {body}")
     return resp.json()
 
 
@@ -754,6 +779,10 @@ def get_law_element(law_id: str, elm: str, asof: str = "", revision_id: str = ""
 
     Returns the element's tag, attributes and cleaned text (capped at 15,000
     characters per call — page with ``offset``).
+
+    ``elm`` is forwarded to a single fixed e-Gov endpoint
+    (``GET /law_data/{key}?elm=...``) — see the e-Gov 法令API v2 docs
+    (https://laws.e-gov.go.jp/api/2) for the full element-path grammar.
     """
     if not law_id.strip() and not revision_id.strip():
         raise ValueError("law_id is required (or pass revision_id)")

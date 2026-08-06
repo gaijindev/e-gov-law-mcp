@@ -3,6 +3,12 @@ __pycache__/
 *.pyc
 .DS_Store
 
+# Build/packaging artifacts
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
 # Saved law text
 data/*.txt
 !data/.gitkeep

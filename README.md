@@ -28,6 +28,8 @@ which a plain `Article[@Num=]` search can't do: 附則 articles reuse main-body 
 - [Bundled skill](#bundled-skill)
 - [Testing](#testing)
 - [Notes and limitations](#notes-and-limitations)
+- [Privacy policy](#privacy-policy)
+- [Support](#support)
 - [License](#license)
 
 ## Why an MCP instead of a chatbot?
@@ -283,7 +285,7 @@ Run the live suite explicitly with `.venv/bin/python -m pytest -m live`.
   treaties (条約) — those aren't in the e-Gov 法令 database.
 - This returns statutory text, not legal advice; verify against the cited source.
 - In `search_laws_by_keyword`, `limit` caps the **total number of matched sentences**
-  returned across all laws (e-Gov default 100, max 1000), not the number of laws. Very
+  returned across all laws (default 50, e-Gov max 1000), not the number of laws. Very
   small values can return nothing — keep it ≥ 20.
 - The e-Gov API signals "no results" with HTTP 404 (code `404001`); the server treats
   that as an empty result set rather than an error. It signals "no such element" for
@@ -293,6 +295,40 @@ Run the live suite explicitly with `.venv/bin/python -m pytest -m live`.
 - The e-Gov API also has a JSON response body for law data, but it's explicitly
   labeled a **trial/beta** format; this server always requests the standard XML and
   parses that, for a stable schema.
+
+## Privacy policy
+
+This server has no accounts, no analytics, and no telemetry. It does not collect,
+store, or transmit any personal data about you or your queries.
+
+- **What it does**: on each tool call it makes a read-only HTTP request to Japan's
+  public e-Gov 法令API (`laws.e-gov.go.jp`) and, for the English-translation tools, to
+  the Ministry of Justice's [Japanese Law Translation](https://www.japaneselawtranslation.go.jp/)
+  site — both public government sources, keyless, no login. Your query text (e.g. the
+  law name or keyword you searched) is sent to those sites as part of the request, the
+  same as visiting their search pages directly; this server does not log, retain, or
+  forward it anywhere else.
+- **Local state**: nothing beyond an in-process, in-memory cache (cleared on restart)
+  and, only if you explicitly call `get_law_content(..., save=True)` or a >50,000-char
+  law triggers auto-save, a plain-text copy of the fetched statute written to local
+  disk (`data/`, or `LAW_MCP_DATA_DIR`/a user data directory once installed as a
+  package). No other data is written or persisted.
+- **Third-party terms**: e-Gov data is provided under Japan's [政府標準利用規約
+  (Government Standard Terms of Use) 2.0](https://www.digital.go.jp/copyright), a
+  CC-BY-4.0-compatible license; the JLT translations are under the
+  [Public Data License 1.0](https://www.japaneselawtranslation.go.jp/en/terms).
+- **Self-hosting**: if you run the [hosted HTTP entrypoint](#hosted--http-deployment)
+  yourself, you control that deployment and are responsible for any request logging
+  your own infrastructure (proxy, load balancer, hosting provider) performs — this
+  server's own code does not add any.
+- **Contact**: questions about this policy or the project — see
+  [Support](#support) below.
+
+## Support
+
+Bug reports and feature requests: [GitHub Issues](https://github.com/gaijindev/e-gov-law-mcp/issues).
+This is an independent, unofficial project — not affiliated with the Japanese
+government, the Digital Agency, or the Ministry of Justice.
 
 ## License
 

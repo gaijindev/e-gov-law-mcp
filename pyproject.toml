@@ -23,6 +23,8 @@ classifiers = [
 dependencies = [
     "requests",
     "fastmcp",
+    "uvicorn",
+    "starlette",
 ]
 
 [project.urls]
