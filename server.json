@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.gaijindev/e-gov-law-mcp",
+  "description": "MCP server for Japan's e-Gov 法令API v2 — search Japanese laws, run full-text keyword search, and fetch any statute article (including 附則/別表/号) verbatim, with point-in-time asof lookups and pending-amendment (未施行) history.",
+  "repository": {
+    "url": "https://github.com/gaijindev/e-gov-law-mcp",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "e-gov-law-mcp",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
