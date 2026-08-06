@@ -34,24 +34,22 @@ which a plain `Article[@Num=]` search can't do: 附則 articles reuse main-body 
 
 ## Why an MCP instead of a chatbot?
 
-A chatbot is the reasoning + language layer; an MCP is the tools + data layer that
-grounds it. Asked from memory, a model can invent article numbers, cite repealed
-law, or be stale at its training cutoff — and you can't check it. With this MCP the
-assistant fetches the **actual current text** from the official e-Gov database and
-cites the `law_id` + article, so the answer is grounded and verifiable.
+A chatbot is the reasoning and language layer; an MCP is the tools and data layer
+that grounds it. Asked from memory, a model can invent article numbers, cite
+repealed law, or just be stale at its training cutoff, and you have no way to check.
+With this MCP the assistant fetches the actual current text from the official e-Gov
+database and cites the `law_id` and article, so the answer is verifiable instead of
+"trust me."
 
 | | Plain chatbot (from memory) | + this MCP |
 | --- | --- | --- |
 | Source | Statistical recall of text it saw | Official e-Gov database (≈9,500 laws) |
-| Accuracy | Can hallucinate / paraphrase | Returns the article verbatim |
+| Accuracy | Can hallucinate or paraphrase | Returns the article verbatim |
 | Freshness | Frozen at a training cutoff | Live, with amendment dates |
-| Verifiable | "Trust me" | `law_id` + article you can cite & check |
-| Behavior | Probabilistic | Deterministic, testable tool calls |
+| Verifiable | No | `law_id` + article you can look up |
 
-A plain chatbot is fine for explanations, drafting, or translation. The MCP earns
-its keep when being wrong is expensive — law, medicine, finance. In short: a plain
-chatbot is a closed-book exam; an MCP-backed one is open-book with the statute on
-the desk.
+A plain chatbot is fine for explanations, drafting, or translation. This MCP earns
+its keep where being wrong is expensive: law, medicine, finance.
 
 ## Tools
 
@@ -106,24 +104,13 @@ the desk.
 
 ## Installation
 
-The easiest way to run this server is [`uvx`](https://docs.astral.sh/uv/guides/tools/)
-— it fetches the package from PyPI and runs it in an isolated environment, no clone
-or venv needed:
+There's also a live hosted instance you can point a client at right away, no
+install: `https://e-gov-law-mcp.onrender.com/mcp` (Streamable HTTP, authless —
+see [Hosted / HTTP deployment](#hosted--http-deployment)). It's a free-tier
+deployment, so it sleeps after ~15 minutes idle and takes a few seconds to wake up
+on the next request.
 
-```sh
-uvx e-gov-law-mcp
-```
-
-That's the command you point an MCP client at (see below). Run it directly to
-confirm it starts (it waits on stdio for a client — Ctrl-C to exit):
-
-```sh
-uvx e-gov-law-mcp
-```
-
-### From source
-
-For local development, or to run a specific commit:
+To run it yourself, clone and use a venv:
 
 ```sh
 git clone https://github.com/gaijindev/e-gov-law-mcp.git
@@ -132,11 +119,15 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-Run it directly to check it starts:
+Run it directly to check it starts (it waits on stdio for a client — Ctrl-C to exit):
 
 ```sh
 .venv/bin/python server.py
 ```
+
+Once this package is published to PyPI, `uvx e-gov-law-mcp` will be the simplest
+way to run it with no clone or venv — the console script and packaging are already
+set up for that ([`pyproject.toml`](pyproject.toml)); it isn't published yet.
 
 ## Use it with Claude or OpenAI
 
@@ -146,30 +137,15 @@ tools to fetch the real law.
 
 ### Claude (no coding)
 
-**Claude Desktop** — add the server to the config file, then restart Claude:
+**Fastest option — point at the hosted instance**, no install: in Claude Desktop or
+Claude Code, add a remote MCP server at
+`https://e-gov-law-mcp.onrender.com/mcp` (see [Installation](#installation) for the
+free-tier cold-start caveat).
+
+**Or run it locally.** After [installing from source](#installation), add it to the
+config file, then restart Claude:
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "e-gov-law": {
-      "command": "uvx",
-      "args": ["e-gov-law-mcp"]
-    }
-  }
-}
-```
-
-**Claude Code (CLI)** — one command:
-
-```sh
-claude mcp add e-gov-law -- uvx e-gov-law-mcp
-claude mcp list   # confirm it shows ✓ Connected
-```
-
-Running [from source](#from-source) instead? Swap the command/args for the
-venv interpreter and `server.py`'s absolute path:
 
 ```json
 {
@@ -180,6 +156,13 @@ venv interpreter and `server.py`'s absolute path:
     }
   }
 }
+```
+
+**Claude Code (CLI)** — one command:
+
+```sh
+claude mcp add e-gov-law -- /absolute/path/to/e-gov-law-mcp/.venv/bin/python /absolute/path/to/e-gov-law-mcp/server.py
+claude mcp list   # confirm it shows ✓ Connected
 ```
 
 Then just ask, in plain English or Japanese:
@@ -203,7 +186,10 @@ from agents.mcp import MCPServerStdio
 
 async def main():
     async with MCPServerStdio(
-        params={"command": "uvx", "args": ["e-gov-law-mcp"]}
+        params={
+            "command": "/absolute/path/to/e-gov-law-mcp/.venv/bin/python",
+            "args": ["/absolute/path/to/e-gov-law-mcp/server.py"],
+        }
     ) as egov:
         agent = Agent(
             name="JP Law Assistant",
@@ -232,7 +218,8 @@ expects exactly two tools, `search` and `fetch`, with a specific id/url/text sha
 server implements both: `search(query)` runs a full-text keyword search (falling back to
 a title search) and returns citable ids; `fetch(id)` resolves an id back to text — a bare
 `law_id` for a whole law, or `"{law_id}::{elm_path}"` for one provision. Point a ChatGPT
-connector at a [hosted instance](#hosted--http-deployment) of this server to use it there.
+connector at `https://e-gov-law-mcp.onrender.com/mcp`, or your own
+[hosted instance](#hosted--http-deployment), to use it there.
 
 ## Hosted / HTTP deployment
 
@@ -248,22 +235,23 @@ looks like a mistake:
 
 - `LAW_MCP_TOKEN` — a shared-secret bearer token; requests need a matching
   `Authorization: Bearer <token>` header. Use this for a private/internal deployment.
-- `LAW_MCP_PUBLIC=1` — run authless, no auth middleware at all. This is a legitimate
-  choice here because the underlying data (Japan's e-Gov 法令 statute text) is public
-  and free with no API key of its own — authless is the expected shape for a ChatGPT
-  connector or a listing in the Claude/MCP directory. The server logs a clear
-  "running authless" line on startup so this is never silent.
+- `LAW_MCP_PUBLIC=1` — run authless, no auth middleware at all. That's a reasonable
+  choice here: the underlying data (Japan's e-Gov 法令 statute text) is public and
+  free with no API key of its own, and authless is the expected shape for a ChatGPT
+  connector or a Claude/MCP directory listing. The server logs a clear "running
+  authless" line on startup so this is never silent.
 
 `LAW_MCP_ADMIN_TOOLS=1` additionally exposes the operator tools (`list_saved_laws`,
 `read_saved_law`, `get_cache_stats`, `clear_cache`) — leave it unset on a public
 deployment.
 
-**Deploy to Render**: this repo includes a [`render.yaml`](render.yaml) Blueprint that
-builds the existing `Dockerfile` as-is, authless by default. In the Render dashboard:
-**New → Blueprint**, point it at this repo (or your fork), and deploy — no extra
-config needed. Render's free tier spins the instance down after ~15 minutes idle and
-cold-starts on the next request; fine for testing, worth upgrading for a
-directory-listed connector you want reliably reachable.
+The live instance at `https://e-gov-law-mcp.onrender.com/mcp` runs exactly this way:
+Docker on Render, `LAW_MCP_PUBLIC=1`. To deploy your own copy, this repo includes a
+[`render.yaml`](render.yaml) Blueprint that builds the existing `Dockerfile` as-is —
+in the Render dashboard, **New → Blueprint**, point it at this repo (or your fork),
+and deploy, no extra config needed. Render's free tier spins the instance down after
+~15 minutes idle and cold-starts on the next request; fine for testing, worth
+upgrading for a directory-listed connector you want reliably reachable.
 
 ## Bundled skill
 

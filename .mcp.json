@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "e-gov-law": {
-      "command": "uvx",
-      "args": ["e-gov-law-mcp"]
+      "command": "/absolute/path/to/e-gov-law-mcp/.venv/bin/python",
+      "args": ["/absolute/path/to/e-gov-law-mcp/server.py"]
     }
   }
 }
