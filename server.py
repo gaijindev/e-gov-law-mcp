@@ -1088,5 +1088,10 @@ if ADMIN_TOOLS:
                           "openWorldHint": False})(clear_cache)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Console-script entrypoint (``e-gov-law-mcp``, see pyproject.toml)."""
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()

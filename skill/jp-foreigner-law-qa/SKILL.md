@@ -22,8 +22,9 @@ never state the content of the law from memory.
 ## Prerequisite
 
 Requires the `e-gov-law` MCP server (tools `find_law_article`, `search_laws`,
-`search_laws_by_keyword`, `get_law_content`). If those tools are not available,
-tell the user to connect/restart the connector and stop.
+`search_laws_by_keyword`, `get_law_content`, `get_law_element`,
+`get_law_revisions`). If those tools are not available, tell the user to
+connect/restart the connector and stop.
 
 ## Workflow
 
@@ -31,7 +32,14 @@ tell the user to connect/restart the connector and stop.
 2. Retrieve the text:
    - **Act + article** → `find_law_article(law_name, article)`
    - **Ordinance/order** (施行規則・施行令・基準省令) → `get_law_content(law_id)`
+   - **別表 (schedule/table), e.g. 在留資格 lists** → `get_law_element(law_id, elm)`,
+     e.g. `get_law_element("326CO0000000319", "AppdxTable[1]")` for 入管法 別表第一.
+   - **附則 (transitional/supplementary provisions)** →
+     `find_law_article(law_name, article, provision="suppl")`.
    - **Not in the tables / unsure** → `search_laws_by_keyword(term)`, then fetch.
+   - **"Is this rule changing soon?" / pending amendments** →
+     `get_law_revisions(law_name_or_id, unenforced_only=True)` — lists 未施行
+     amendments (promulgated but not yet in force) with their enforcement dates.
 3. Quote the relevant portion (Japanese, with an English gloss) and cite the law
    name + article number exactly as returned.
 4. Explain in plain language what it means, in general terms, for the person.
@@ -107,11 +115,13 @@ If a question is not in these tables, use `search_laws_by_keyword` with a key te
 
 ## Common 在留資格 (status of residence) — context
 
-The full list is in 入管法 別表第一・第二; requirements are in the 基準省令
-(`402M50000010016`). Frequently asked: 技術・人文知識・国際業務, 技能, 特定技能（1号・2号）,
-技能実習, 経営・管理, 留学, 家族滞在, 定住者, 永住者, 日本人の配偶者等. 特定技能 and 技能実習 are
-defined under 入管法 別表 + the 基準省令; the employment statutes above apply to those
-workers in full.
+The full list is in 入管法 別表第一・第二 — fetch it directly with
+`get_law_element("326CO0000000319", "AppdxTable[1]")` (別表第一) or
+`"AppdxTable[2]"` (別表第二); requirements are in the 基準省令
+(`get_law_content("402M50000010016")`). Frequently asked: 技術・人文知識・国際業務,
+技能, 特定技能（1号・2号）, 技能実習, 経営・管理, 留学, 家族滞在, 定住者, 永住者, 日本人の配偶者等.
+特定技能 and 技能実習 are defined under 入管法 別表 + the 基準省令; the employment
+statutes above apply to those workers in full.
 
 ## Worked example (follow this shape)
 
